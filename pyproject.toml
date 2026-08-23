@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supported-cluster-generator"
+version = "0.1.0"
+description = "Generate supported mono- and multimetallic cluster structures."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["ase", "numpy", "networkx"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+cluster-gen = "cluster_generator.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

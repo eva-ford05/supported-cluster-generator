@@ -1,7 +1,7 @@
 import argparse
 from .config import default_metals
 from .io import get_input_files
-from .workflows.growth import run_centre_growth
+from .workflows.growth import run_topological_growth
 
 
 def build_parser():
@@ -40,9 +40,16 @@ def main():
 
         for input_file in input_files:
             try:
-                structure_data, outputs = run_centre_growth(input_file, metals, args.add, args.geometry, args.directions, args.output_dir)
+                structure_data, outputs = run_topological_growth(input_file, metals, args.add, args.geometry, args.directions, args.output_dir)
                 total_outputs += len(outputs)
-                print(f"{input_file.name}: {structure_data['n_metals']} metal atom(s), {len(structure_data['growth_centres'])} growth centre(s), {len(outputs)} candidate structure(s)")
+
+                print(
+                f"{input_file.name}: "
+                f"{structure_data['n_metals']} metal atom(s), "
+                f"{len(structure_data['growth_centres'])} centre(s), "
+                f"{len(structure_data['growth_edges'])} edge(s), "
+                f"{len(outputs)} candidate structure(s)")
+
             except Exception as error:
                 print(f"WARNING: Could not process {input_file}: {error}")
 

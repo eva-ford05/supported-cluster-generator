@@ -99,6 +99,62 @@ def generate_edge_growth(atoms, edge, new_element, preferred_distances, geometry
 
     return candidates   
 
+def generate_face_growth(atoms, triangle, new_element, preferred_distances):
+    '''
+    Generate candidate positions above and below an existing metal triangle
+    '''
+
+    i, j, k = triangle
+
+    p1 = atoms[i].position
+    p2 = atoms[j].position
+    p3 = atoms[k].position
+
+    v1 = p2 - p1
+    v2 = p3 - p1
+
+    normal = np.cross(v1, v2)
+
+    if np.linalg.norm(normal) == 0:
+        return []
+
+    normal = normal / np.linalg.norm(normal)
+
+    triangle_centre = (p1 + p2 + p3) / 3
+
+    d1 = get_preferred_distance(atoms[i].symbol, new_element, preferred_distances)
+    d2 = get_preferred_distance(atoms[j].symbol, new_element, preferred_distances)
+    d3 = get_preferred_distance(atoms[k].symbol, new_element, preferred_distances)
+
+    target_distance = (d1 + d2 + d3) / 3
+
+    side_1 = np.linalg.norm(p2 - p1)
+    side_2 = np.linalg.norm(p3 - p2)
+    side_3 = np.linalg.norm(p1 - p3)
+
+    average_side = (side_1 + side_2 + side_3) / 3
+    in_plane_radius = average_side / np.sqrt(3)
+
+    height_squared = target_distance**2 - in_plane_radius**2
+
+    if height_squared < 0:
+        return []
+
+    height = np.sqrt(height_squared)
+
+    positions = [
+        triangle_centre + height * normal,
+        triangle_centre - height * normal
+    ]
+
+    candidates = []
+
+    for position in positions: 
+        candidates.append({"growth_type": "face", "triangle": triangle, "new_element": new_element,
+        "position": position, "target_distance": target_distance})
+
+    return candidates
+
 def build_candidate_structure(atoms, candidate):
     '''
     Copy the parent structure and append the candidate metal atom.

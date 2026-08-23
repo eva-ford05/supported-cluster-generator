@@ -48,6 +48,7 @@ def main():
                 f"{structure_data['n_metals']} metal atom(s), "
                 f"{len(structure_data['growth_centres'])} centre(s), "
                 f"{len(structure_data['growth_edges'])} edge(s), "
+                f"{len(structure_data['growth_triangles'])} triangle(s), "
                 f"{len(outputs)} candidate structure(s)")
 
             except Exception as error:

@@ -1,14 +1,11 @@
 from itertools import combinations
 import networkx as nx
-from ase.data import atomic_numbers, covalent_radii
-
+import numpy as np
+from .distances import get_bond_cutoff
+from .selection import get_cluster_indices
 
 def get_metal_indices(atoms, metals):
-    '''
-    Return the ASE indices belonging to the user-defined cluster metals.
-    '''
-    return [atom.index for atom in atoms if atom.symbol in metals]
-
+    return get_cluster_indices(atoms, metals)
 
 def get_metal_pair_distances(atoms, metal_indices):
     '''
@@ -26,21 +23,6 @@ def get_metal_pair_distances(atoms, metal_indices):
         })
 
     return pairs
-
-
-def get_bond_cutoff(element_i, element_j, bond_cutoffs, bond_tolerance):
-    '''
-    Return the cutoff used to decide whether two metals are connected in the graph.
-    '''
-    pair_type = tuple(sorted((element_i, element_j)))
-
-    if pair_type in bond_cutoffs:
-        return bond_cutoffs[pair_type]
-
-    radius_i = covalent_radii[atomic_numbers[element_i]]
-    radius_j = covalent_radii[atomic_numbers[element_j]]
-    return bond_tolerance * (radius_i + radius_j)
-
 
 def build_metal_graph(atoms, metal_indices, pair_distances, bond_cutoffs, bond_tolerance):
     '''

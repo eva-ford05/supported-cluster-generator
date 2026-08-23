@@ -1,5 +1,7 @@
 from ase import Atom
-from ..geometry import get_growth_directions, get_preferred_distance
+from ..geometry import get_growth_directions
+from ..distances import get_preferred_distance
+from ..surface import get_surface_normal
 import numpy as np
 
 def generate_centre_growth(atoms, centre_index, new_element, preferred_distances, n_directions=8, geometry="surface"):
@@ -62,8 +64,7 @@ def generate_edge_growth(atoms, edge, new_element, preferred_distances, geometry
     candidates = []
 
     if geometry == "surface":
-        surface_normal = np.cross(atoms.cell[0], atoms.cell[1])
-        surface_normal = surface_normal / np.linalg.norm(surface_normal)
+        surface_normal = get_surface_normal(atoms)
 
         perpendicular = np.cross(surface_normal, edge_unit)
 
@@ -77,10 +78,12 @@ def generate_edge_growth(atoms, edge, new_element, preferred_distances, geometry
             circle_centre - height * perpendicular
         ]
     elif geometry == "3d":
-        surface_normal = np.cross(atoms.cell[0], atoms.cell[1])
-        surface_normal = surface_normal / np.linalg.norm(surface_normal)
+        surface_normal = get_surface_normal(atoms)
 
         in_plane = np.cross(surface_normal, edge_unit)
+
+        if np.linalg.norm(in_plane) == 0:
+            return []
         in_plane = in_plane / np.linalg.norm(in_plane)
 
         positions = [

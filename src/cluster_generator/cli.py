@@ -1,5 +1,4 @@
 import argparse
-from .config import default_metals
 from .io import get_input_files
 from .workflows.growth import run_topological_growth
 
@@ -13,7 +12,7 @@ def build_parser():
 
     grow = subparsers.add_parser("grow", help="Generate topological cluster-growth candidates.")
     grow.add_argument("inputs", nargs="+", help="Input files, directories or glob patterns.")
-    grow.add_argument("--metals", nargs="+", default=sorted(default_metals), help="Elements treated as the existing metal cluster.")
+    grow.add_argument("--metals", nargs="+", required=True, help="Elements treated as the existing metal cluster.")
     grow.add_argument("--add", required=True, help="Element to add during this growth step.")
     grow.add_argument("--geometry", choices=["surface", "3d", "both"], default="surface", help="Candidate direction mode.")
     grow.add_argument("--directions", type=int, default=8, help="Number of directions sampled per growth centre.")

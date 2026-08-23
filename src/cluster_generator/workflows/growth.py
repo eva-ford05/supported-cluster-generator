@@ -1,5 +1,5 @@
 from pathlib import Path
-from ..config import bond_cutoffs, bond_tolerance, preferred_distances
+from ..config import bond_cutoffs, bond_tolerance, preferred_distances, metal_clash_scale, support_clash_scale, support_local_radius, support_penetration_tolerance
 from ..generators.topological import build_candidate_structure, generate_centre_growth, generate_edge_growth, generate_face_growth
 from ..io import read_structure, write_structure
 from ..topology import analyse_structure
@@ -7,10 +7,6 @@ from ..filters.clashes import has_atomic_clash
 from ..filters.support import is_inside_support
 from ..filters.duplicates import is_duplicate
 
-def run_topological_growth(input_file, metals, new_element, geometry="surface", n_directions=8, output_dir="generated_samples"):
-    '''
-    Run one-centre topological growth for one input structure.
-    '''
 def run_topological_growth(input_file, metals, new_element, geometry="surface", n_directions=8, output_dir="generated_samples"):
     '''
     Run topological cluster growth for one input structure.
@@ -33,10 +29,10 @@ def run_topological_growth(input_file, metals, new_element, geometry="surface", 
         for candidate_number, candidate in enumerate(candidates):
             new_atoms = build_candidate_structure(atoms, candidate)
 
-            if has_atomic_clash(new_atoms, metals):
+            if has_atomic_clash(new_atoms, metals, metal_scale=metal_clash_scale, support_scale=support_clash_scale):
                 continue
 
-            if is_inside_support(new_atoms, metals):
+            if is_inside_support(new_atoms, metals, tolerance=support_penetration_tolerance, local_radius=support_local_radius):
                 continue
 
             if is_duplicate(new_atoms, kept_structures, metals):
@@ -55,10 +51,10 @@ def run_topological_growth(input_file, metals, new_element, geometry="surface", 
         for candidate_number, candidate in enumerate(candidates):
             new_atoms = build_candidate_structure(atoms, candidate)
 
-            if has_atomic_clash(new_atoms, metals):
+            if has_atomic_clash(new_atoms, metals, metal_scale=metal_clash_scale, support_scale=support_clash_scale):
                 continue
 
-            if is_inside_support(new_atoms, metals):
+            if is_inside_support(new_atoms, metals, tolerance=support_penetration_tolerance, local_radius=support_local_radius):
                 continue
 
             if is_duplicate(new_atoms, kept_structures, metals):
@@ -77,10 +73,10 @@ def run_topological_growth(input_file, metals, new_element, geometry="surface", 
         for candidate_number, candidate in enumerate(candidates):
             new_atoms = build_candidate_structure(atoms, candidate)
 
-            if has_atomic_clash(new_atoms, metals):
+            if has_atomic_clash(new_atoms, metals, metal_scale=metal_clash_scale, support_scale=support_clash_scale):
                 continue
 
-            if is_inside_support(new_atoms, metals):
+            if is_inside_support(new_atoms, metals, tolerance=support_penetration_tolerance, local_radius=support_local_radius):
                 continue
 
             if is_duplicate(new_atoms, kept_structures, metals):

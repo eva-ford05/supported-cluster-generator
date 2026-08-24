@@ -30,3 +30,17 @@ def is_duplicate(atoms, existing_structures, metals, decimals=3):
             return True
 
     return False
+
+
+def is_duplicate_fingerprint(atoms, seen_fingerprints, metals, decimals=3):
+    '''
+    Return True if the metal fingerprint has already been seen.
+    '''
+
+    fingerprint = get_metal_fingerprint(atoms, metals, decimals)
+
+    if fingerprint in seen_fingerprints:
+        return True
+
+    seen_fingerprints.add(fingerprint)
+    return False

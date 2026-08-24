@@ -1,5 +1,5 @@
 from ase import Atoms
-from cluster_generator.filters.duplicates import get_metal_fingerprint, is_duplicate
+from cluster_generator.filters.duplicates import get_metal_fingerprint, is_duplicate, is_duplicate_fingerprint
 
 def test_identical_structures_are_duplicates():
     atoms_1 = Atoms(symbols=["Co", "Co", "Ru"], positions=[[0.0, 0.0, 0.0], [2.5, 0.0, 0.0], [1.25, 2.0, 0.0]])
@@ -23,3 +23,20 @@ def test_fingerprint_ignores_rotation():
     atoms_1 = Atoms(symbols=["Co", "Co"], positions=[[0.0, 0.0, 0.0], [2.5, 0.0, 0.0]])
     atoms_2 = Atoms(symbols=["Co", "Co"], positions=[[0.0, 0.0, 0.0], [0.0, 2.5, 0.0]])
     assert get_metal_fingerprint(atoms_1, {"Co"}) == get_metal_fingerprint(atoms_2, {"Co"})
+
+def test_duplicate_fingerprint_is_added_and_detected():
+    atoms = Atoms(symbols=["Co", "Co", "Ru"], positions=[[0.0, 0.0, 0.0], [2.5, 0.0, 0.0], [1.25, 2.0, 0.0]])
+
+    seen_fingerprints = set()
+
+    assert is_duplicate_fingerprint(atoms, seen_fingerprints, {"Co", "Ru"}) is False
+    assert is_duplicate_fingerprint(atoms, seen_fingerprints, {"Co", "Ru"}) is True
+
+def test_different_fingerprints_are_kept():
+    atoms_1 = Atoms(symbols=["Co", "Co", "Ru"], positions=[[0.0, 0.0, 0.0], [2.5, 0.0, 0.0], [1.25, 2.0, 0.0]])
+    atoms_2 = Atoms(symbols=["Co", "Co", "Ru"], positions=[[0.0, 0.0, 0.0], [2.5, 0.0, 0.0], [1.25, 3.0, 0.0]])
+
+    seen_fingerprints = set()
+
+    assert is_duplicate_fingerprint(atoms_1, seen_fingerprints, {"Co", "Ru"}) is False
+    assert is_duplicate_fingerprint(atoms_2, seen_fingerprints, {"Co", "Ru"}) is False

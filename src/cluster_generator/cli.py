@@ -13,7 +13,7 @@ def build_parser():
     grow = subparsers.add_parser("grow", help="Generate topological cluster-growth candidates.")
     grow.add_argument("inputs", nargs="+", help="Input files, directories or glob patterns.")
     grow.add_argument("--metals", nargs="+", required=True, help="Elements treated as the existing metal cluster.")
-    grow.add_argument("--add", required=True, help="Element to add during this growth step.")
+    grow.add_argument("--add", nargs="+", required=True, help="Element(s) allowed to be added during growth.")
     grow.add_argument("--geometry", choices=["surface", "3d", "both"], default="surface", help="Candidate direction mode.")
     grow.add_argument("--directions", type=int, default=8, help="Number of directions sampled per growth centre.")
     grow.add_argument("--output-dir", default="generated_samples", help="Directory for generated structures.")
@@ -39,16 +39,17 @@ def main():
 
         for input_file in input_files:
             try:
-                structure_data, outputs = run_topological_growth(input_file, metals, args.add, args.geometry, args.directions, args.output_dir)
-                total_outputs += len(outputs)
-
-                print(
-                f"{input_file.name}: "
-                f"{structure_data['n_metals']} metal atom(s), "
-                f"{len(structure_data['growth_centres'])} centre(s), "
-                f"{len(structure_data['growth_edges'])} edge(s), "
-                f"{len(structure_data['growth_triangles'])} triangle(s), "
-                f"{len(outputs)} candidate structure(s)")
+                for new_element in args.add:
+                    structure_data, outputs = run_topological_growth(input_file, metals, new_element, args.geometry, args.directions, args.output_dir)
+                    total_outputs += len(outputs)
+                    print(
+                    f"{input_file.name}: "
+                    f"add {new_element}, "
+                    f"{structure_data['n_metals']} metal atom(s), "
+                    f"{len(structure_data['growth_centres'])} centre(s), "
+                    f"{len(structure_data['growth_edges'])} edge(s), "
+                    f"{len(structure_data['growth_triangles'])} triangle(s), "
+                    f"{len(outputs)} candidate structure(s)")
 
             except Exception as error:
                 print(f"WARNING: Could not process {input_file}: {error}")

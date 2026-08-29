@@ -5,7 +5,7 @@ from ..io import read_structure, write_structure
 from ..topology import analyse_structure
 from ..filters.clashes import has_atomic_clash
 from ..filters.support import is_inside_support
-from ..filters.duplicates import get_metal_fingerprint, is_duplicate_fingerprint
+from ..filters.duplicates import get_metal_fingerprint, is_duplicate_supported
 import numpy as np
 
 def generate_topological_children(atoms, metals, new_elements, geometry="surface", n_directions=8):
@@ -37,7 +37,7 @@ def generate_topological_children(atoms, metals, new_elements, geometry="surface
                     stats["support"] += 1
                     continue
 
-                if is_duplicate_fingerprint(new_atoms, seen_fingerprints, metals):
+                if is_duplicate_supported(new_atoms, seen_fingerprints, metals):
                     stats["within_parent_duplicate"] += 1
                     continue
 
@@ -60,7 +60,7 @@ def generate_topological_children(atoms, metals, new_elements, geometry="surface
                     stats["support"] += 1
                     continue
 
-                if is_duplicate_fingerprint(new_atoms, seen_fingerprints, metals):
+                if is_duplicate_supported(new_atoms, seen_fingerprints, metals):
                     stats["within_parent_duplicate"] += 1
                     continue
 
@@ -83,7 +83,7 @@ def generate_topological_children(atoms, metals, new_elements, geometry="surface
                     stats["support"] += 1
                     continue
 
-                if is_duplicate_fingerprint(new_atoms, seen_fingerprints, metals):
+                if is_duplicate_supported(new_atoms, seen_fingerprints, metals):
                     stats["within_parent_duplicate"] += 1
                     continue
 
@@ -153,7 +153,7 @@ def run_recursive_growth(atoms, metals, new_elements, target_size, geometry="sur
             generation_stats["within_parent_duplicate"] += stats["within_parent_duplicate"]
 
             for child in children:
-                if is_duplicate_fingerprint(child, seen_fingerprints, metals):
+                if is_duplicate_supported(child, seen_fingerprints, metals):
                     generation_stats["cross_parent_duplicate"] += 1
                     continue
 
@@ -213,7 +213,7 @@ def run_topological_growth(input_file, metals, new_element, geometry="surface", 
             if is_inside_support(new_atoms, metals, tolerance=support_penetration_tolerance, local_radius=support_local_radius):
                 continue
 
-            if is_duplicate_fingerprint(new_atoms, seen_fingerprints, metals):
+            if is_duplicate_supported(new_atoms, seen_fingerprints, metals):
                 continue
 
             output_name = output_dir / f"{input_file.stem}_centre{centre}_{new_element}_{geometry}_{candidate_number}.extxyz"
@@ -233,7 +233,7 @@ def run_topological_growth(input_file, metals, new_element, geometry="surface", 
             if is_inside_support(new_atoms, metals, tolerance=support_penetration_tolerance, local_radius=support_local_radius):
                 continue
 
-            if is_duplicate_fingerprint(new_atoms, seen_fingerprints, metals):
+            if is_duplicate_supported(new_atoms, seen_fingerprints, metals):
                 continue
 
             output_name = output_dir / f"{input_file.stem}_edge{edge[0]}-{edge[1]}_{new_element}_{geometry}_{candidate_number}.extxyz"
@@ -253,7 +253,7 @@ def run_topological_growth(input_file, metals, new_element, geometry="surface", 
             if is_inside_support(new_atoms, metals, tolerance=support_penetration_tolerance, local_radius=support_local_radius):
                 continue
 
-            if is_duplicate_fingerprint(new_atoms, seen_fingerprints, metals):
+            if is_duplicate_supported(new_atoms, seen_fingerprints, metals):
                 continue
 
             output_name = output_dir / f"{input_file.stem}_face{triangle[0]}-{triangle[1]}-{triangle[2]}_{new_element}_{candidate_number}.extxyz"

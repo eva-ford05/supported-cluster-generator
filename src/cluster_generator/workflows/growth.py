@@ -5,7 +5,8 @@ from ..io import read_structure, write_structure
 from ..topology import analyse_structure
 from ..filters.clashes import has_atomic_clash
 from ..filters.support import is_inside_support
-from ..filters.duplicates import is_duplicate_fingerprint
+from ..filters.duplicates import get_metal_fingerprint, is_duplicate_fingerprint
+import numpy as np
 
 def generate_topological_children(atoms, metals, new_elements, geometry="surface", n_directions=8):
     '''
@@ -91,8 +92,38 @@ def generate_topological_children(atoms, metals, new_elements, geometry="surface
 
     return children, stats
 
+def select_diverse_structures(structures, metals, max_structures):
+    '''
+    Select a structurally diverse subset using metal-metal distance fingerprints.
+    '''
 
-def run_recursive_growth(atoms, metals, new_elements, target_size, geometry="surface", n_directions=8, keep_generations=False):
+    if max_structures is None or len(structures) <= max_structures:
+        return structures
+
+    fingerprints = [get_metal_fingerprint(atoms, metals) for atoms in structures]
+    vectors = [np.array([distance for pair, distance in fingerprint]) for fingerprint in fingerprints]
+
+    selected = [0]
+
+    while len(selected) < max_structures:
+        best_index = None
+        best_distance = -1
+
+        for i, vector in enumerate(vectors):
+            if i in selected:
+                continue
+
+            minimum_distance = min(np.linalg.norm(vector - vectors[j]) for j in selected)
+
+            if minimum_distance > best_distance:
+                best_distance = minimum_distance
+                best_index = i
+
+        selected.append(best_index)
+
+    return [structures[i] for i in selected]
+
+def run_recursive_growth(atoms, metals, new_elements, target_size, geometry="surface", n_directions=8, keep_generations=False, max_structures=None):
     '''
     Recursively grow a supported cluster until the target metal count is reached.
     '''
@@ -129,7 +160,13 @@ def run_recursive_growth(atoms, metals, new_elements, target_size, geometry="sur
                 next_structures.append(child)
 
         if not next_structures:
+            print(f"Growth stopped at size {current_size}: no valid size {current_size + 1} structures generated.")
             break
+
+        total_unique = len(next_structures)
+
+        if max_structures is not None and total_unique > max_structures:
+            next_structures = select_diverse_structures(next_structures, metals, max_structures)
 
         current_structures = next_structures
         current_size += 1
@@ -139,7 +176,8 @@ def run_recursive_growth(atoms, metals, new_elements, target_size, geometry="sur
 
         print(f"size {current_size}: {generation_stats['raw']} raw, {generation_stats['clash']} clash, "
               f"{generation_stats['support']} support, {generation_stats['within_parent_duplicate']} within-parent duplicate, "
-              f"{generation_stats['cross_parent_duplicate']} cross-parent duplicate, {len(current_structures)} kept")
+              f"{generation_stats['cross_parent_duplicate']} cross-parent duplicate, {total_unique} unique, "
+              f"{len(current_structures)} kept")
 
     if keep_generations:
         return current_structures, generations

@@ -22,6 +22,7 @@ def build_parser():
     grow.add_argument("--directions", type=int, default=8, help="Number of directions sampled per growth centre.")
     grow.add_argument("--target-size", type=int, help="Recursively grow clusters to this total number of metal atoms.")
     grow.add_argument("--size-range", nargs=2, type=int, metavar=("MIN", "MAX"), help="Generate and save all cluster sizes in this range.")
+    grow.add_argument("--max-structures", type=int, help="Maximum number of structures kept per recursive generation")
     grow.add_argument("--output-dir", default="generated_samples", help="Directory for generated structures.")
 
     return parser
@@ -49,7 +50,7 @@ def main():
                     min_size, max_size = args.size_range
 
                     atoms = read_structure(input_file)
-                    structures, generations = run_recursive_growth(atoms, metals, args.add, max_size, args.geometry, args.directions, keep_generations=True)
+                    structures, generations = run_recursive_growth(atoms, metals, args.add, max_size, args.geometry, args.directions, keep_generations=True, max_structures=args.max_structures)
 
                     output_dir = Path(args.output_dir)
                     output_dir.mkdir(parents=True, exist_ok=True)
@@ -66,7 +67,7 @@ def main():
                         print(f"{input_file.name}: saved {len(generations[size])} structure(s) at size {size}")
                 elif args.target_size:
                     atoms = read_structure(input_file)
-                    structures = run_recursive_growth(atoms, metals, args.add, args.target_size, args.geometry, args.directions)
+                    structures = run_recursive_growth(atoms, metals, args.add, args.target_size, args.geometry, args.directions, max_structures=args.max_structures)
 
                     output_dir = Path(args.output_dir)
                     output_dir.mkdir(parents=True, exist_ok=True)
